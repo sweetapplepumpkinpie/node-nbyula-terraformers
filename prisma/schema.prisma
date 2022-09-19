@@ -10,6 +10,7 @@ datasource db {
 model Job {
   id           Int           @id @default(autoincrement())
   title        String
+  isArchived   Boolean       @default(false)
   description  String
   location     String
   deadline     DateTime

@@ -44,12 +44,16 @@ const postJob = async ({ body: jobData, user }, res) => {
 
 const archiveJob = async ({ params: { id } }, res) => {
   try {
-    const result = await prisma.job.delete({
+    const job = await prisma.job.update({
       where: {
         id: parseInt(id),
       },
+      data: {
+        isArchived: true,
+      },
     })
-    return res.status(204).json(result)
+
+    return res.json(job)
   } catch {
     return res.send(404)
   }
@@ -57,6 +61,7 @@ const archiveJob = async ({ params: { id } }, res) => {
 
 const getJobs = async (req, res) => {
   const jobs = await prisma.job.findMany({
+    where: { isArchived: false },
     orderBy: [{ order: 'asc' }],
     include: {
       creator: {
