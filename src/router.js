@@ -10,5 +10,6 @@ router
   .use(authMiddleware)
   .get('/getUserInfo', authController.getUserInfo)
   .post('/jobs', jobsController.postJob)
+  .delete('/jobs/:id', jobsController.archiveJob)
 
 module.exports = router

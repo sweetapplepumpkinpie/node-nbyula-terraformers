@@ -1,4 +1,5 @@
 const Prisma = require('@prisma/client')
+const { response } = require('express')
 const validator = require('validator')
 
 const { PrismaClient } = Prisma
@@ -41,6 +42,20 @@ const postJob = async ({ body: jobData, user }, res) => {
   return res.status(201).json(job)
 }
 
+const archiveJob = async ({ params: { id } }, res) => {
+  try {
+    const result = await prisma.job.delete({
+      where: {
+        id: parseInt(id),
+      },
+    })
+    return res.status(204).json(result)
+  } catch {
+    return res.send(404)
+  }
+}
+
 module.exports = {
   postJob,
+  archiveJob,
 }
