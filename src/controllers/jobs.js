@@ -134,9 +134,89 @@ const markJob = async (
   }
 }
 
+const updateOrder = async (
+  { body: { id: destinationId }, params: { id } },
+  res
+) => {
+  try {
+    let firstOrderValue = 0,
+      targetOrderValue = 0
+
+    if (destinationId > 0) {
+      const prevJob = await prisma.job.findFirst({
+        where: { id: destinationId },
+      })
+
+      firstOrderValue = prevJob.order
+    }
+
+    const nextJob = await prisma.job.findFirst({
+      orderBy: [{ order: 'asc' }],
+      where: {
+        order: {
+          gt: firstOrderValue,
+        },
+      },
+    })
+
+    if (!nextJob) {
+      const {
+        _max: { order: maxOrderValue },
+      } = await prisma.job.aggregate({
+        _max: {
+          order: true,
+        },
+      })
+
+      targetOrderValue = maxOrderValue + 1
+    } else {
+      targetOrderValue = (firstOrderValue + nextJob.order) / 2
+    }
+
+    await prisma.job.update({
+      where: {
+        id: parseInt(id),
+      },
+      data: {
+        order: targetOrderValue,
+      },
+    })
+
+    const jobs = await prisma.job.findMany({
+      where: { isArchived: false },
+      orderBy: [{ order: 'asc' }],
+      include: {
+        creator: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        applicants: {
+          select: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
+      },
+    })
+
+    return res.send(jobs)
+  } catch (error) {
+    return res.status(404).send('Not found')
+  }
+}
+
 module.exports = {
   postJob,
   archiveJob,
   getJobs,
   markJob,
+  updateOrder,
 }

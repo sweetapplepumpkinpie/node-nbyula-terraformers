@@ -13,5 +13,6 @@ router
   .delete('/jobs/:id', jobsController.archiveJob)
   .get('/jobs', jobsController.getJobs)
   .patch('/jobs/:id/mark', jobsController.markJob)
+  .patch('/jobs/:id/updateOrder', jobsController.updateOrder)
 
 module.exports = router
