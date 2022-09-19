@@ -71,14 +71,72 @@ const getJobs = async (req, res) => {
           email: true,
         },
       },
+      applicants: {
+        select: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+        },
+      },
     },
   })
 
   return res.send(jobs)
 }
 
+const markJob = async (
+  { user: { id: userId, role }, params: { id: jobId } },
+  res
+) => {
+  const markedJob = await prisma.job.findFirst({
+    where: {
+      id: parseInt(jobId),
+      isArchived: false,
+      applicants: {
+        some: {
+          userId: userId,
+          jobId: parseInt(jobId),
+        },
+      },
+    },
+  })
+
+  if (markedJob) {
+    return res.status(400).send('Already marked.')
+  }
+
+  if (role === 'user') {
+    try {
+      const job = await prisma.job.update({
+        where: {
+          id: parseInt(jobId),
+          isArchived: false,
+        },
+        data: {
+          applicants: {
+            createMany: {
+              data: [{ userId }],
+            },
+          },
+        },
+      })
+
+      return res.send(job)
+    } catch (error) {
+      return res.status(404).send('Not found')
+    }
+  } else {
+    return res.status(401).send('Unauthorized action.')
+  }
+}
+
 module.exports = {
   postJob,
   archiveJob,
   getJobs,
+  markJob,
 }
