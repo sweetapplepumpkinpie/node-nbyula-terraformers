@@ -55,7 +55,25 @@ const archiveJob = async ({ params: { id } }, res) => {
   }
 }
 
+const getJobs = async (req, res) => {
+  const jobs = await prisma.job.findMany({
+    orderBy: [{ order: 'asc' }],
+    include: {
+      creator: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
+  })
+
+  return res.send(jobs)
+}
+
 module.exports = {
   postJob,
   archiveJob,
+  getJobs,
 }

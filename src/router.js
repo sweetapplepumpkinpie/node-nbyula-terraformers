@@ -11,5 +11,6 @@ router
   .get('/getUserInfo', authController.getUserInfo)
   .post('/jobs', jobsController.postJob)
   .delete('/jobs/:id', jobsController.archiveJob)
+  .get('/jobs', jobsController.getJobs)
 
 module.exports = router
